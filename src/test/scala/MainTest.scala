@@ -4,7 +4,7 @@ import org.apache.spark.sql.SparkSession
 import org.scalatest.funsuite.AnyFunSuite
 import org.apache.spark.sql.functions._
 
-class MainAppTest extends AnyFunSuite {
+class MainTest extends AnyFunSuite {
 
   val spark: SparkSession = SparkSession
     .builder()

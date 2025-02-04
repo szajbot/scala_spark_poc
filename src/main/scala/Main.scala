@@ -1,6 +1,6 @@
 package org.example
 
-import org.apache.spark.sql.{Dataset, Row, SaveMode, SparkSession}
+import org.apache.spark.sql.{Dataset, Row, SparkSession}
 import org.apache.spark.sql.functions.{col, countDistinct, not, when}
 
 object Main {
