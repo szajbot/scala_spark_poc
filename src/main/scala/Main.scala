@@ -1,6 +1,6 @@
 package org.example
 
-import org.apache.spark.sql.{Dataset, Row, SparkSession}
+import org.apache.spark.sql.{Dataset, Row, SaveMode, SparkSession}
 import org.apache.spark.sql.functions.{col, countDistinct, not, when}
 
 object Main {
@@ -25,7 +25,6 @@ object Main {
     val df_final = generateReport(df_departments, df_employees, df_transaction)
 
     df_final.show()
-    df_final.write.csv("output/result.csv")
   }
 
   def generateReport(df_departments: Dataset[Row], df_employees: Dataset[Row], df_transaction: Dataset[Row]): Dataset[Row] = {
