@@ -97,7 +97,64 @@ class MainAppTest extends AnyFunSuite {
     assert(result.filter(col("name") === "First department").select(col("average revenue per employee")).head().get(0) === 200)
   }
 
-  //TODO test na filtrowanie (2)
+  test("Should filter hardcoded transaction type") {
+    val df_departments = spark.createDataFrame(Seq(
+      (1, "First department")
+    )).toDF("id", "name")
 
-  //TODO filtorwanie pracownika ktorego transakcje ostaly odciecte prze filter
+    val df_employees = spark.createDataFrame(Seq(
+      (1, "Emplyee", "WithTwoTransaction", "senior", 1),
+    )).toDF("id", "name", "surname", "position", "department")
+
+    val df_transaction = spark.createDataFrame(Seq(
+      (1, 100, "intermediary sale", 1),
+      (2, 100,"sale", 1)
+    )).toDF("id","value","type","employee")
+
+    val result = Main.generateReport(df_departments, df_employees, df_transaction)
+
+    assert(result.filter(col("name") === "First department").select(col("average revenue per employee")).head().get(0) === 100)
+  }
+
+  test("Should filter hardcoded employee position") {
+    val df_departments = spark.createDataFrame(Seq(
+      (1, "First department")
+    )).toDF("id", "name")
+
+    val df_employees = spark.createDataFrame(Seq(
+      (1, "Employee", "ThatShouldBeFiltered", "junior", 1),
+    )).toDF("id", "name", "surname", "position", "department")
+
+    val df_transaction = spark.createDataFrame(Seq(
+      (1, 100, "intermediary sale", 1),
+      (2, 100,"sale", 1)
+    )).toDF("id","value","type","employee")
+
+    val result = Main.generateReport(df_departments, df_employees, df_transaction)
+
+    assert(result.filter(col("name") === "First department").select(col("average revenue per employee")).head().get(0) === 0)
+  }
+
+  test("Should filter employee with previously filtered transaction") {
+    //    If we filter some transaction type,
+    //    that is the only transaction type that some employee had, I assume that employee also should be filtered
+
+    val df_departments = spark.createDataFrame(Seq(
+      (1, "First department")
+    )).toDF("id", "name")
+
+    val df_employees = spark.createDataFrame(Seq(
+      (1, "Emplyee", "WithFilteredTransaction", "senior", 1),
+      (2, "Employee", "WithoutFilteredTransaction", "mid", 1)
+    )).toDF("id", "name", "surname", "position", "department")
+
+    val df_transaction = spark.createDataFrame(Seq(
+      (1, 100, "intermediary sale", 1),
+      (2, 500,"sale", 2)
+    )).toDF("id","value","type","employee")
+
+    val result = Main.generateReport(df_departments, df_employees, df_transaction)
+
+    assert(result.filter(col("name") === "First department").select(col("average revenue per employee")).head().get(0) === 500)
+  }
 }

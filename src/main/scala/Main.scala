@@ -23,7 +23,9 @@ object Main {
     val df_departments = readFileFromPath(spark, resources_path + departments_file_name)
 
     val df_final = generateReport(df_departments, df_employees, df_transaction)
+
     df_final.show()
+    df_final.write.csv("output/result.csv")
   }
 
   def generateReport(df_departments: Dataset[Row], df_employees: Dataset[Row], df_transaction: Dataset[Row]): Dataset[Row] = {
