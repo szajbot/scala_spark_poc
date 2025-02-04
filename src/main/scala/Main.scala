@@ -16,22 +16,24 @@ object Main {
       .master("local[*]")
       .getOrCreate()
 
+    val df_transaction = readFileFromPath(spark, resources_path + transaction_file_name)
+
     val df_employees = readFileFromPath(spark, resources_path + employees_file_name)
-      .filter(not(col("position").isin("junior")))
 
     val df_departments = readFileFromPath(spark, resources_path + departments_file_name)
-
-    val df_transaction = readFileFromPath(spark, resources_path + transaction_file_name)
-      .filter(not(col("type").isin("intermediary sale")))
 
     val df_final = generateReport(df_departments, df_employees, df_transaction)
     df_final.show()
   }
 
   def generateReport(df_departments: Dataset[Row], df_employees: Dataset[Row], df_transaction: Dataset[Row]): Dataset[Row] = {
-    val df_joined_sets = df_transaction.as("dt")
-      .join(df_employees.as("de"), df_employees("id") === df_transaction("employee"), "inner")
-      .join(df_departments.as("dd"), df_departments("id") === df_employees("department"), "outer")
+    // Filter some selected transaction type and employee position
+    val df_transaction_filtered = df_transaction.filter(not(col("type").isin("intermediary sale")))
+    val df_employees_filtered = df_employees.filter(not(col("position").isin("junior")))
+
+    val df_joined_sets = df_transaction_filtered.as("dt")
+      .join(df_employees_filtered.as("de"), df_employees_filtered("id") === df_transaction_filtered("employee"), "inner")
+      .join(df_departments.as("dd"), df_departments("id") === df_employees_filtered("department"), "outer")
       .select(
         col("dt.id").as("transaction"),
         col("value").cast("int"),
@@ -41,7 +43,7 @@ object Main {
         col("department"),
         col("dd.name")
       )
-    //    Wyfiltorwani zostali pracownicy bez transakcji ale został department bez pracownika
+    //Joined set is filtered from employees withour transaction but not from departments without employees
 
     val df_with_employee_count = df_joined_sets.groupBy(col("department")).agg(countDistinct(col("employee")))
 
