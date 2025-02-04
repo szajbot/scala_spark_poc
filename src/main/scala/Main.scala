@@ -1,6 +1,6 @@
 package org.example
 
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{Dataset, Row, SparkSession}
 import org.apache.spark.sql.functions.{col, countDistinct, not, when}
 
 object Main {
@@ -16,24 +16,20 @@ object Main {
       .master("local[*]")
       .getOrCreate()
 
-    val df_employees = spark.read
-      .option("delimiter", ";")
-      .option("header", value = true)
-      .csv(resources_path + employees_file_name)
+    val df_employees = readFileFromPath(spark, resources_path + employees_file_name)
       .filter(not(col("position").isin("junior")))
 
-    val df_departments = spark.read
-      .option("delimiter", ";")
-      .option("header", value = true)
-      .csv(resources_path + departments_file_name)
+    val df_departments = readFileFromPath(spark, resources_path + departments_file_name)
 
-    val df_transaction = spark.read
-      .option("delimiter", ";")
-      .option("header", value = true)
-      .csv(resources_path + transaction_file_name)
+    val df_transaction = readFileFromPath(spark, resources_path + transaction_file_name)
       .filter(not(col("type").isin("intermediary sale")))
 
-    val df_1 = df_transaction.as("dt")
+    val df_final = generateReport(df_departments, df_employees, df_transaction)
+    df_final.show()
+  }
+
+  def generateReport(df_departments: Dataset[Row], df_employees: Dataset[Row], df_transaction: Dataset[Row]): Dataset[Row] = {
+    val df_joined_sets = df_transaction.as("dt")
       .join(df_employees.as("de"), df_employees("id") === df_transaction("employee"), "inner")
       .join(df_departments.as("dd"), df_departments("id") === df_employees("department"), "outer")
       .select(
@@ -45,11 +41,11 @@ object Main {
         col("department"),
         col("dd.name")
       )
-//    Wyfiltorwani zostali pracownicy bez transakcji ale został department bez pracownika
+    //    Wyfiltorwani zostali pracownicy bez transakcji ale został department bez pracownika
 
-    val df_with_employee_count = df_1.groupBy(col("department")).agg(countDistinct(col("employee")))
+    val df_with_employee_count = df_joined_sets.groupBy(col("department")).agg(countDistinct(col("employee")))
 
-    val df_with_summed_values = df_1
+    val df_with_summed_values = df_joined_sets
       .select(
         col("name"),
         when(col("type") === "contract", col("value") * 6).otherwise(col("value")).as("normalized value"),
@@ -59,13 +55,18 @@ object Main {
     val df_sums_and_employees = df_with_summed_values
       .join(df_with_employee_count, df_with_summed_values.col("department") === df_with_employee_count.col("department"), "left_outer")
 
-    val df_report = df_sums_and_employees.select(
+    df_sums_and_employees.select(
       col("name"),
       when(col("sum(normalized value)").isNull.or(col("count(DISTINCT employee)") === 0), 0).otherwise(
         col("sum(normalized value)") / col("count(DISTINCT employee)")
       ).as("average revenue per employee")
     ).sort(col("average revenue per employee").desc)
+  }
 
-    df_report.show()
+  def readFileFromPath(spark: SparkSession, filePath: String): Dataset[Row] = {
+    spark.read
+      .option("delimiter", ";")
+      .option("header", value = true)
+      .csv(filePath)
   }
 }
