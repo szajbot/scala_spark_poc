@@ -1,1 +1,51 @@
 id;value;type;employee
+1;708;sale;6
+2;680;intermediary sale;3
+3;891;intermediary sale;1
+4;556;sale;1
+5;996;intermediary sale;1
+6;1000;intermediary sale;4
+7;621;contract;1
+8;529;sale;7
+9;784;contract;9
+10;581;intermediary sale;7
+11;769;intermediary sale;3
+12;851;sale;9
+13;989;contract;9
+14;849;sale;6
+15;529;sale;6
+16;806;sale;8
+17;730;contract;4
+18;636;sale;1
+19;541;intermediary sale;5
+20;541;intermediary sale;1
+21;774;sale;3
+22;868;intermediary sale;5
+23;609;contract;3
+24;824;contract;9
+25;588;intermediary sale;8
+26;635;contract;8
+27;759;intermediary sale;10
+28;907;intermediary sale;4
+29;858;contract;9
+30;594;contract;10
+31;626;intermediary sale;1
+32;663;contract;4
+33;983;intermediary sale;5
+34;810;contract;4
+35;827;contract;7
+36;621;contract;4
+37;903;intermediary sale;4
+38;632;sale;5
+39;939;sale;2
+40;605;sale;9
+41;811;intermediary sale;7
+42;746;contract;5
+43;779;intermediary sale;9
+44;907;sale;5
+45;681;sale;1
+46;978;intermediary sale;8
+47;938;contract;1
+48;964;contract;8
+49;874;intermediary sale;8
+50;880;contract;6
